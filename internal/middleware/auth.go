@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -16,25 +17,15 @@ const (
 
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing authorization header"})
+		token, err := extractBearerToken(c.GetHeader("Authorization"))
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header"})
-			return
-		}
-
-		claims, err := pkgAuth.ParseToken(parts[1])
+		claims, err := pkgAuth.ParseUserToken(token)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
-			return
-		}
-		if claims.Scope != pkgAuth.ScopeUser {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token scope"})
 			return
 		}
 
@@ -45,29 +36,30 @@ func AuthRequired() gin.HandlerFunc {
 
 func AdminAuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing authorization header"})
+		token, err := extractBearerToken(c.GetHeader("Authorization"))
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header"})
-			return
-		}
-
-		claims, err := pkgAuth.ParseToken(parts[1])
+		claims, err := pkgAuth.ParseAdminToken(token)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
-			return
-		}
-		if claims.Scope != pkgAuth.ScopeAdmin {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token scope"})
 			return
 		}
 
 		c.Set(ContextAdminIDKey, claims.SubjectID)
 		c.Next()
 	}
+}
+
+func extractBearerToken(authHeader string) (string, error) {
+	if strings.TrimSpace(authHeader) == "" {
+		return "", errors.New("missing authorization header")
+	}
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+		return "", errors.New("invalid authorization header")
+	}
+	return strings.TrimSpace(parts[1]), nil
 }

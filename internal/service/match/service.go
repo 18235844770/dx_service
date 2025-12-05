@@ -317,6 +317,40 @@ func (s *Service) loadWalletBalance(ctx context.Context, userID int64) (int64, e
 	return wallet.BalanceAvailable, nil
 }
 
+func (s *Service) ValidateTableAccess(ctx context.Context, userID, tableID int64) error {
+	if userID == 0 {
+		return appErr.ErrUnauthorized
+	}
+	if tableID == 0 {
+		return appErr.ErrTableNotFound
+	}
+
+	var table model.Table
+	if err := s.db.WithContext(ctx).First(&table, tableID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return appErr.ErrTableNotFound
+		}
+		return err
+	}
+
+	if len(table.PlayersJSON) == 0 {
+		return appErr.ErrTableAccessDenied
+	}
+
+	var players map[string]struct {
+		UserID int64 `json:"userId"`
+	}
+	if err := json.Unmarshal(table.PlayersJSON, &players); err != nil {
+		return err
+	}
+	for _, player := range players {
+		if player.UserID == userID {
+			return nil
+		}
+	}
+	return appErr.ErrTableAccessDenied
+}
+
 func buildQueueKey(sceneID int64) string {
 	return fmt.Sprintf("queue:%d", sceneID)
 }

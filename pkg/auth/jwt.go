@@ -60,3 +60,27 @@ func ParseToken(tokenString string) (*Claims, error) {
 	}
 	return claims, nil
 }
+
+// ParseUserToken validates the token and ensures it is issued for user scope.
+func ParseUserToken(tokenString string) (*Claims, error) {
+	claims, err := ParseToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Scope != ScopeUser {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+
+// ParseAdminToken validates the token and ensures it is issued for admin scope.
+func ParseAdminToken(tokenString string) (*Claims, error) {
+	claims, err := ParseToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Scope != ScopeAdmin {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}

@@ -26,4 +26,7 @@ var (
 	ErrAgentRuleNotFound    = errors.New("agent rule not found")
 	ErrInvalidAgentRule     = errors.New("invalid agent rule payload")
 	ErrInvalidWalletPayload = errors.New("invalid wallet payload")
+	ErrUnauthorized         = errors.New("unauthorized")
+	ErrTableNotFound        = errors.New("table not found")
+	ErrTableAccessDenied    = errors.New("table access denied")
 )

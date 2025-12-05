@@ -31,6 +31,7 @@ type Handler struct {
 
 func RegisterRoutes(r *gin.Engine, services *service.Container) {
 	handler := &Handler{services: services}
+	wsHandler := ws.NewHandler(services.Match, services.Game)
 
 	r.GET("/ping", func(c *gin.Context) {
 		response.Success(c, gin.H{"message": "pong"})
@@ -89,7 +90,7 @@ func RegisterRoutes(r *gin.Engine, services *service.Container) {
 		}
 	}
 
-	r.GET("/ws/table/:tableId", ws.HandleTableWS)
+	r.GET("/ws/table/:tableId", wsHandler.HandleTableWS)
 }
 
 type smsSendBody struct {
