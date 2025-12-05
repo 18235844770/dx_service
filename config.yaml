@@ -1,0 +1,23 @@
+server:
+  port: "9081"
+  mode: "debug"
+
+database:
+  dsn: "host=81.68.235.105 user=postgres password=HyH5202 dbname=dx_service port=5432 sslmode=disable TimeZone=Asia/Shanghai search_path=dx_service"
+
+redis:
+  addr: "115.159.103.201:6379"
+  password: "Li1411354774."
+  db: 0
+
+jwt:
+  secret: "your-secret-key"
+  expire: 24
+
+features:
+  skipLocationValidation: true
+
+admin:
+  defaultUsername: "admin"
+  defaultPassword: "Admin@123456"
+

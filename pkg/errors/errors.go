@@ -1,0 +1,29 @@
+package errors
+
+import "errors"
+
+var (
+	ErrSceneNotFound        = errors.New("scene not found")
+	ErrInvalidBuyIn         = errors.New("invalid buy-in amount")
+	ErrInsufficientBalance  = errors.New("insufficient balance")
+	ErrAlreadyInQueue       = errors.New("user already in queue")
+	ErrQueueProcessing      = errors.New("queue operation already in progress")
+	ErrMatchNotFound        = errors.New("match not found")
+	ErrMatchAlreadySettled  = errors.New("match already settled")
+	ErrSettlementValidation = errors.New("invalid settlement payload")
+	ErrInvalidPhone         = errors.New("invalid phone")
+	ErrInvalidSMSCode       = errors.New("invalid sms code")
+	ErrSMSCodeExpired       = errors.New("sms code expired")
+	ErrInviteCodeNotFound   = errors.New("invite code not found")
+	ErrAlreadyBoundAgent    = errors.New("user already bound to agent")
+	ErrUserBanned           = errors.New("user is banned")
+	ErrUserNotFound         = errors.New("user not found")
+	ErrInvalidUserStatus    = errors.New("invalid user status")
+	ErrAdminNotFound        = errors.New("admin not found")
+	ErrInvalidAdminPassword = errors.New("invalid admin credentials")
+	ErrAdminDisabled        = errors.New("admin is disabled")
+	ErrRakeRuleNotFound     = errors.New("rake rule not found")
+	ErrAgentRuleNotFound    = errors.New("agent rule not found")
+	ErrInvalidAgentRule     = errors.New("invalid agent rule payload")
+	ErrInvalidWalletPayload = errors.New("invalid wallet payload")
+)
