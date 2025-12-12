@@ -39,14 +39,20 @@ func (s *Service) handleRuntimeFinish(rt *TableRuntime) {
 
 	playerIDs := rt.playersSnapshot()
 	results := make([]PlayerResult, 0, len(playerIDs))
-	for _, id := range playerIDs {
-		results = append(results, PlayerResult{
-			UserID:    id,
-			NetPoints: 0,
-			Meta: map[string]interface{}{
-				"reason": "auto_settle_no_scores",
-			},
-		})
+
+	if len(rt.SettlementResults) > 0 {
+		results = rt.SettlementResults
+	} else {
+		// Fallback for empty/aborted games
+		for _, id := range playerIDs {
+			results = append(results, PlayerResult{
+				UserID:    id,
+				NetPoints: 0,
+				Meta: map[string]interface{}{
+					"reason": "auto_settle_no_scores",
+				},
+			})
+		}
 	}
 
 	req := SettlementRequest{
@@ -54,20 +60,28 @@ func (s *Service) handleRuntimeFinish(rt *TableRuntime) {
 		SceneID: match.SceneID,
 		Results: results,
 	}
-	_ = s.SettleMatch(ctx, req)
+	if err := s.SettleMatch(ctx, req); err != nil {
+		return
+	}
+	// Update table streak for next match
+	_ = s.db.WithContext(ctx).
+		Model(&model.Table{}).
+		Where("id = ?", rt.tableID).
+		Update("mango_streak", rt.mangoStreak).Error
 }
 
 func (s *Service) loadActiveMatch(ctx context.Context, tableID int64) (*model.Match, error) {
-	var match model.Match
+	var matches []model.Match
 	err := s.db.WithContext(ctx).
 		Where("table_id = ? AND ended_at IS NULL", tableID).
 		Order("id DESC").
-		First(&match).Error
+		Limit(1).
+		Find(&matches).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
 		return nil, err
 	}
-	return &match, nil
+	if len(matches) == 0 {
+		return nil, nil
+	}
+	return &matches[0], nil
 }

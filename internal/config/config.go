@@ -37,6 +37,7 @@ type JWTConfig struct {
 
 type FeatureConfig struct {
 	SkipLocationValidation bool `mapstructure:"skipLocationValidation"`
+	SkipNetworkValidation  bool `mapstructure:"skipNetworkValidation"`
 }
 
 type AdminSeedConfig struct {

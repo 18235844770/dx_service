@@ -16,6 +16,7 @@ jwt:
 
 features:
   skipLocationValidation: true
+  skipNetworkValidation: true
 
 admin:
   defaultUsername: "admin"

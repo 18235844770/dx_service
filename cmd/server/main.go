@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"dx-service/internal/api"
 	"dx-service/internal/config"
@@ -19,6 +21,8 @@ func main() {
 	var configPath string
 	flag.StringVar(&configPath, "config", "config.yaml", "path to config file")
 	flag.Parse()
+
+	rand.Seed(time.Now().UnixNano())
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

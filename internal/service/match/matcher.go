@@ -135,6 +135,9 @@ func (s *Service) passesDistance(scene model.Scene, selected []queueMember, cand
 }
 
 func passesNetwork(selected []queueMember, candidate queueMember) bool {
+	if config.GlobalConfig != nil && config.GlobalConfig.Features.SkipNetworkValidation {
+		return true
+	}
 	for _, existing := range selected {
 		if netutil.SameSubnet24(existing.IP, candidate.IP) {
 			return false
@@ -205,6 +208,7 @@ func (s *Service) createTableAndMatch(ctx context.Context, scene model.Scene, pl
 				"userId": player.UserID,
 				"alias":  fmt.Sprintf("玩家%d", seat),
 				"status": "waiting",
+				"chips":  player.BuyIn, // Use the BuyIn amount as initial chips
 			}
 		}
 		playerBytes, err := json.Marshal(playerMap)

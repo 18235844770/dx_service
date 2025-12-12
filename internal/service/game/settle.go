@@ -247,11 +247,13 @@ func (s *Service) SettleMatch(ctx context.Context, req SettlementRequest) error 
 
 func (s *Service) loadAgentRule(tx *gorm.DB) (*model.AgentRule, error) {
 	var rule model.AgentRule
-	if err := tx.Order("id DESC").First(&rule).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
+	// Use Find instead of First to avoid GORM RecordNotFound log when table is empty
+	err := tx.Order("id DESC").Limit(1).Find(&rule).Error
+	if err != nil {
 		return nil, err
+	}
+	if rule.ID == 0 {
+		return nil, nil
 	}
 	return &rule, nil
 }

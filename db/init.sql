@@ -96,14 +96,21 @@ CREATE TABLE IF NOT EXISTS scenes (
     bobo_enabled         BOOL DEFAULT FALSE,
     distance_threshold_m INT DEFAULT 0,
     rake_rule_id         BIGINT,
-    created_at           TIMESTAMPTZ DEFAULT NOW()
+    status               TEXT NOT NULL DEFAULT 'enabled',
+    created_at           TIMESTAMPTZ DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS rake_rules (
     id          BIGSERIAL PRIMARY KEY,
+    name        TEXT,
     type        TEXT NOT NULL,
+    remark      TEXT,
+    status      TEXT NOT NULL DEFAULT 'enabled',
     config_json JSONB NOT NULL,
-    created_at  TIMESTAMPTZ DEFAULT NOW()
+    effective_at TIMESTAMPTZ,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS agent_rules (
@@ -147,4 +154,8 @@ CREATE INDEX IF NOT EXISTS idx_queue_users_agent ON users(bind_agent_id);
 CREATE INDEX IF NOT EXISTS idx_wallets_updated_at ON wallets(updated_at);
 CREATE INDEX IF NOT EXISTS idx_billing_logs_user ON billing_logs(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_match_round_logs_match ON match_round_logs(match_id, round_no);
+CREATE INDEX IF NOT EXISTS idx_scenes_status ON scenes(status);
+CREATE INDEX IF NOT EXISTS idx_rake_rules_status ON rake_rules(status);
 
+-- 初始化默认管理员 (可选)
+-- INSERT INTO admins (username, password_hash, display_name) VALUES ('admin', '$2a$10$YourHashedPasswordHere', 'Super Admin') ON CONFLICT DO NOTHING;
